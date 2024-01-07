@@ -1,0 +1,49 @@
+import FreeCADGui
+import random
+from PySide.QtGui import QAction, QIcon
+
+def random_color():
+    return (random.random(), random.random(), random.random())
+
+def color_faces(obj):
+    if hasattr(obj, "Shape") and hasattr(obj.Shape, "Faces"):
+        if obj.Shape.Faces:
+            colors = [random_color() for _ in obj.Shape.Faces]
+            obj.ViewObject.DiffuseColor = colors
+        else:
+            FreeCAD.Console.PrintError("The object does not have any faces.\n")
+    else:
+        FreeCAD.Console.PrintError("Selected object is not suitable. It must be a shape with faces.\n")
+
+class ColorFacesCommand:
+    """Command to color faces of a selected body."""
+
+    def GetResources(self):
+        return {'MenuText': "Color Faces",
+                'ToolTip': "Apply random colors to each face of the selected body"}
+
+    def IsActive(self):
+        return FreeCADGui.Selection.countObjectsOfType('Part::Feature') > 0
+
+    def Activated(self):
+        selection = FreeCADGui.Selection.getSelection()
+        if selection:
+            for obj in selection:
+                color_faces(obj)
+        else:
+            FreeCAD.Console.PrintMessage("No object selected. Please select a body with faces.\n")
+
+# Register the command
+FreeCADGui.addCommand('ColorFacesCommand', ColorFacesCommand())
+
+# Find or create the toolbar
+toolbar_name = "Color Faces Toolbar"
+mainWindow = FreeCADGui.getMainWindow()
+toolbar = mainWindow.findChild(QToolBar, toolbar_name)
+if not toolbar:
+    toolbar = mainWindow.addToolBar(toolbar_name)
+
+# Create the action and add it to the toolbar
+colorFacesAction = QAction(QIcon(), "Color Faces", mainWindow)
+colorFacesAction.triggered.connect(lambda: ColorFacesCommand().Activated())
+toolbar.addAction(colorFacesAction)
