@@ -39,8 +39,10 @@ FreeCADGui.addCommand('ColorFacesCommand', ColorFacesCommand())
 # Find or create the toolbar
 toolbar_name = "Color Faces Toolbar"
 mainWindow = FreeCADGui.getMainWindow()
-toolbar = mainWindow.findChild(QToolBar, toolbar_name)
-if not toolbar:
+toolbar = None
+try:
+    toolbar = mainWindow.findChild(QToolBar, toolbar_name)
+except:
     toolbar = mainWindow.addToolBar(toolbar_name)
 
 # Create the action and add it to the toolbar
